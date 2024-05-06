@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
     <!-- ① CDNでCSSを読み込み -->
     <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/theme/default.css">
 </head>
 <body>
     <div id="app">
@@ -33,6 +34,16 @@
                 読み取り中です...
             </div>
             <div>
+                <v-slider
+                    v-model="THRESHOLD"
+                    max=255
+                    min=1
+                    class="align-center"
+                    step=1
+                    hide-details
+                ></v-slider>
+            </div>
+            <div>
                 <div>現在の設定: {{ THRESHOLD }} </div>
             </div>
         </div>
@@ -40,9 +51,15 @@
     <!-- ① CDNでJavaScriptを読み込み -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src='https://unpkg.com/tesseract.js@v5/dist/tesseract.min.js'></script>
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.17/dist/vuetify.min.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/vuetify@3.3.17/dist/vuetify.min.js'></script>
     <script>
 
-    
+const { createApp } = Vue
+const { createVuetify } = Vuetify
+
+const vuetify = createVuetify()
+
 Vue.createApp({
     data() {
         return {
@@ -60,7 +77,7 @@ Vue.createApp({
             ocr_area_y: 0,
             renderProcess: null,
             tmpImg: null,
-            THRESHOLD: 120
+            THRESHOLD: 200
         }
     },
     methods: {
@@ -215,8 +232,7 @@ Vue.createApp({
         this.initialize();
 
     }
-}).mount('#app');
-
+}).use(vuetify).mount('#app');
 
 
     </script>
