@@ -20,6 +20,7 @@
             </div>
             <!-- pause： スナップショットを撮ったので一次停止 -->
             <div v-if="status=='pause'">
+                <img :src="dataUrl"></img>
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-8 py-3 mr-1 rounded" @click="runOcr">
                     ISBNを読み取る
                 </button>
@@ -34,7 +35,7 @@
         </div>
     </div>
     <!-- ① CDNでJavaScriptを読み込み -->
-    <script src="https://unpkg.com/vue@3.0.0/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src='https://unpkg.com/tesseract.js@v5/dist/tesseract.min.js'></script>
     <script>
 
@@ -47,7 +48,14 @@ Vue.createApp({
             context: null,
             dataUrl: '',
             status: 'none',
-            imageForOCR: ''
+            imageForOCR: null,
+            ix: 0,
+            iy: 0,
+            v: 1,
+            img: new Image(),
+            ocr_area_x: 0,
+            ocr_area_y: 0,
+            renderProcess: null
         }
     },
     methods: {
@@ -101,15 +109,17 @@ Vue.createApp({
                 this.context.fillText("こんにちは", x, y);
 
                 // 座標の指定（今回は中央やや下）
-                const ocr_area_x = this.canvas.width;
-                const ocr_area_y = this.canvas.height / 8;
+                this.ocr_area_width = this.canvas.width;
+                this.ocr_area_height = this.canvas.height / 10;
+                this.ocr_area_x = this.canvas.width;
+                this.ocr_area_y = this.canvas.height / 2 - this.ocr_area_height / 2;
 
                 this.context.fillStyle = "rgba(" + [0, 0, 0, 1] + ")";
-                this.context.fillRect(0, 0, this.canvas.width, this.canvas.height / 2 - ocr_area_y / 2);
-                this.context.fillRect(0, this.canvas.height / 2 + ocr_area_y / 2, this.canvas.width, this.canvas.height);
+                this.context.fillRect(0, 0, this.ocr_area_x, this.ocr_area_y);
+                this.context.fillRect(0, this.ocr_area_y + this.ocr_area_height, this.canvas.width, this.canvas.height);
             }
 
-            requestAnimationFrame(this.render);
+            this.renderProcess = requestAnimationFrame(this.render);
 
         },
         runOcr() { // ③ スナップショットからテキストを抽出
@@ -155,8 +165,8 @@ Vue.createApp({
 
             // this.makeSound(); // 音を鳴らす
             this.pauseVideo();
-            this.dataUrl = this.canvas.toDataURL();
-
+            cancelAnimationFrame(this.renderProcess);
+            this.cropImage();
         },
         makeSound() { // ④ おまけ：スナップショットをとるときに音をならす
 
@@ -171,8 +181,14 @@ Vue.createApp({
             document.body.appendChild(iFrame);
 
         },
-        imageClip() {
-            console.log("aaa");
+        cropImage() {
+            //this.context.fillRect( 0, 0, this.canvas.width, this.canvas.height );   // 背景を塗る
+            let cropCanvas = document.createElement("canvas");
+            cropCanvas.width = this.ocr_area_width;
+            cropCanvas.height = this.ocr_area_height;
+            let cropCanvasContent = cropCanvas.getContext('2d');
+            cropCanvasContent.drawImage(this.canvas, 0, this.ocr_area_y, this.ocr_area_width, this.ocr_area_height, 0, 0, this.ocr_area_width, this.ocr_area_height);
+            this.dataUrl = cropCanvas.toDataURL();            
         }
     },
     mounted() {
