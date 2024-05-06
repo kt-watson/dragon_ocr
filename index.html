@@ -129,11 +129,7 @@ Vue.createApp({
             Tesseract.recognize(this.dataUrl, 'eng', {
                 logger: log => {
                     console.log(log);
-                },
-                rotateAuto: true, 
-                imageColor: true, 
-                imageGrey: true, 
-                imageBinary: true
+                }
             })
             .then(result => {
                 console.log(result)
