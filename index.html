@@ -173,7 +173,6 @@ Vue.createApp({
             
             const result = await this.ocrworker.recognize(this.dataUrl);
             this.status = 'none';
-            await this.ocrworker.terminate();
 
             console.log(result)
 
@@ -182,7 +181,8 @@ Vue.createApp({
             let _this = this
             if(confirm(result.data.text)){
                 _this.detectLog += result.data.text
-            };                
+            };
+            await this.ocrworker.terminate();
         },
 
         
