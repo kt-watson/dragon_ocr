@@ -134,7 +134,7 @@ Vue.createApp({
                 this.context.fillText("こんにちは", x, y);
 
 
-                var src = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                var src = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height,{ willReadFrequently: true });
                 var dst = this.context.createImageData(this.canvas.width, this.canvas.height);
                 this.tmpImg = this.canvas.toDataURL();
 
