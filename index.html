@@ -27,6 +27,9 @@
         <div>
             <div>現在の設定: {{ THRESHOLD }} </div>
         </div>
+        <div>
+            <v-textarea label="検知履歴" v-model="detectLog"></v-textarea>
+        </div>
     </div>
     <!-- ① CDNでJavaScriptを読み込み -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -58,7 +61,8 @@ Vue.createApp({
             renderProcess: null,
             tmpImg: null,
             THRESHOLD: 200,
-            greymode: true
+            greymode: true,
+            detectLog: null
         }
     },
     methods: {
@@ -169,7 +173,11 @@ Vue.createApp({
 
                 if(result.data.text.length == 0) return;
 
-                alert(result.data.text);
+                let _this = this
+                if(confirm(result.data.text)){
+                    _this.detectLog += result.data.text
+                };
+                
 
             })
             .catch(error => console.log(error))
