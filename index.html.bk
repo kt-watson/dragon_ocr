@@ -1,0 +1,236 @@
+<html>
+<head>
+    <!-- ③ viewportを追加してスマホでも見やすくする -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <!-- ① CDNでCSSを読み込み -->
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/theme/default.css">
+</head>
+<body>
+    <div id="app">
+        <div ref="canvas-container" style="width:100%;margin:0 auto;">
+            <canvas ref="canvas"></canvas>
+        </div>
+        <div class="text-center pt-3">
+            <!-- ② Status によって表示ブロックを切り替える -->
+            <!-- play： カメラの映像をキャンバスにリアルタイムで表示 -->
+            <div v-if="status=='play'">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded" @click="takeSnapshot">
+                    スナップショットを取る
+                </button>
+            </div>
+            <!-- pause： スナップショットを撮ったので一次停止 -->
+            <div v-if="status=='pause'">
+                <img :src="dataUrl"></img>
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-8 py-3 mr-1 rounded" @click="runOcr">
+                    ISBNを読み取る
+                </button>
+                <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 ml-1 border border-blue-500 hover:border-transparent rounded" @click="playVideo">
+                    戻る
+                </button>
+            </div>
+            <!-- pause： スナップショットをOCRにかけてテキストを取得 -->
+            <div v-if="status=='reading'">
+                読み取り中です...
+            </div>
+            <div>
+                <v-slider
+                    v-model="THRESHOLD"
+                    max=255
+                    min=1
+                    class="align-center"
+                    step=1
+                    hide-details
+                ></v-slider>
+            </div>
+            <div>
+                <div>現在の設定: {{ THRESHOLD }} </div>
+            </div>
+        </div>
+    </div>
+    <!-- ① CDNでJavaScriptを読み込み -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src='https://unpkg.com/tesseract.js@v5/dist/tesseract.min.js'></script>
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.17/dist/vuetify.min.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/vuetify@3.3.17/dist/vuetify.min.js'></script>
+    <script>
+
+const { createApp } = Vue
+const { createVuetify } = Vuetify
+
+const vuetify = createVuetify()
+
+Vue.createApp({
+    data() {
+        return {
+            video: null,
+            canvas: null,
+            context: null,
+            dataUrl: '',
+            status: 'none',
+            imageForOCR: null,
+            ix: 0,
+            iy: 0,
+            v: 1,
+            img: new Image(),
+            ocr_area_x: 0,
+            ocr_area_y: 0,
+            renderProcess: null,
+            tmpImg: null,
+            THRESHOLD: 200
+        }
+    },
+    methods: {
+        // ① カメラとキャンバスの準備
+        initialize() {
+
+            this.status = 'initialize';
+
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: {
+                        ideal: 'environment'
+                    }
+                }
+            })
+            .then(stream => {
+
+                this.canvas = this.$refs.canvas;
+                this.context = this.canvas.getContext('2d');
+
+                this.video = document.createElement('video');
+                this.video.addEventListener('loadedmetadata', () => { // メタデータが取得できるようになったら実行
+
+                    const canvasContainer = this.$refs['canvas-container'];
+                    this.canvas.width = canvasContainer.offsetWidth;
+                    this.canvas.height = parseInt(this.canvas.width * this.video.videoHeight / this.video.videoWidth);
+                    this.render();
+
+                });
+                // iOSのために以下３つの設定が必要
+                this.video.setAttribute('autoplay', '');
+                this.video.setAttribute('muted', '');
+                this.video.setAttribute('playsinline', '');
+                this.video.srcObject = stream;
+                this.playVideo();
+
+            })
+            .catch(error => console.log(error));
+
+        },
+        render() {
+
+            if(this.video.readyState === this.video.HAVE_ENOUGH_DATA) {
+
+                this.context.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+
+                // 座標の指定（今回は中央やや下）
+                const x = (this.canvas.width / 2);
+                const y = (this.canvas.height / 1.2);
+                // 文字の描画
+                this.context.fillText("こんにちは", x, y);
+
+
+                var src = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                var dst = this.context.createImageData(this.canvas.width, this.canvas.height);
+                this.tmpImg = this.canvas.toDataURL();
+
+                for (var i = 0; i < src.data.length; i=i+4) {
+                    var yy = ~~(0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2]);
+                    var ret = (yy > this.THRESHOLD) ? 255 : 0;
+                    dst.data[i] = dst.data[i+1] = dst.data[i+2] = ret;
+                    dst.data[i+3] = src.data[i+3];
+                }
+
+                this.context.putImageData(dst, 0, 0);
+
+                // 座標の指定（今回は中央やや下）
+                this.ocr_area_width = this.canvas.width;
+                this.ocr_area_height = this.canvas.height / 10;
+                this.ocr_area_x = this.canvas.width;
+                this.ocr_area_y = this.canvas.height / 2 - this.ocr_area_height / 2;
+
+                this.context.fillStyle = "rgba(" + [0, 0, 0, 1] + ")";
+                this.context.fillRect(0, 0, this.ocr_area_x, this.ocr_area_y);
+                this.context.fillRect(0, this.ocr_area_y + this.ocr_area_height, this.canvas.width, this.canvas.height);
+            }
+
+            this.renderProcess = requestAnimationFrame(this.render);
+
+        },
+        runOcr() { // ③ スナップショットからテキストを抽出
+
+            this.status = 'reading';
+
+            Tesseract.recognize(this.dataUrl, 'eng', {
+                logger: log => {
+                    console.log(log);
+                }
+            })
+            .then(result => {
+                console.log(result)
+
+                alert(result.data.text);
+
+            })
+            .catch(error => console.log(error))
+            .finally(() => {
+
+                this.playVideo();
+
+            });
+
+        },
+        playVideo() {
+
+            this.video.play();
+            this.status = 'play';
+
+        },
+        pauseVideo() {
+
+            this.video.pause();
+            this.status = 'pause';
+
+        },
+        takeSnapshot() { // ② スナップショットを取る（カメラは一時停止）
+
+            // this.makeSound(); // 音を鳴らす
+            this.pauseVideo();
+            cancelAnimationFrame(this.renderProcess);
+            this.cropImage();
+        },
+        makeSound() { // ④ おまけ：スナップショットをとるときに音をならす
+
+            document.querySelectorAll('.notification-iframe').forEach(el => el.remove()); // 全ての通知用 iFrame を削除
+
+            // soundタグは使わず iFrame で直接音声ファイルへアクセスする
+            const iFrame = document.createElement('iframe');
+            iFrame.setAttribute('src', '/audios/insight.ogg');
+            iFrame.setAttribute('allow', 'autoplay');
+            iFrame.style.display = 'none';
+            iFrame.className = 'notification-iframe';
+            document.body.appendChild(iFrame);
+
+        },
+        cropImage() {
+            //this.context.fillRect( 0, 0, this.canvas.width, this.canvas.height );   // 背景を塗る
+            let cropCanvas = document.createElement("canvas");
+            cropCanvas.width = this.ocr_area_width;
+            cropCanvas.height = this.ocr_area_height;
+            let cropCanvasContent = cropCanvas.getContext('2d');
+            cropCanvasContent.drawImage(this.canvas, 0, this.ocr_area_y, this.ocr_area_width, this.ocr_area_height, 0, 0, this.ocr_area_width, this.ocr_area_height);
+            this.dataUrl = cropCanvas.toDataURL();            
+        }
+    },
+    mounted() {
+
+        this.initialize();
+
+    }
+}).use(vuetify).mount('#app');
+
+
+    </script>
+</body>
+</html>
