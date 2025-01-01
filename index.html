@@ -73,22 +73,15 @@ Vue.createApp({
             this.status = 'initialize';
 
 
-            /*
+            
             const { createWorker } = Tesseract;
-            this.ocrworker = await createWorker('eng', 3, {
-              corePath: 'https://unpkg.com/browse/tesseract.js-core@2.2.0/tesseract-core.wasm.js',
-              workerPath: "https://unpkg.com/browse/tesseract.js@2.1.4/dist/worker.min.js",
-              logger: m => console.log(m),
-            });
+            this.ocrworker = await createWorker('eng');
 
             await this.ocrworker.setParameters({
               tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
               tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
             });
-            */
-
             
-
             navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: {
@@ -122,7 +115,7 @@ Vue.createApp({
 
                 setInterval(function(){
                     _this.cropImage();
-                    _this.runOcr();
+                    _this.runOcr2();
                 }, 1000);
                 
 
