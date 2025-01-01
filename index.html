@@ -161,6 +161,8 @@ Vue.createApp({
                 this.status = 'none';
                 console.log(result)
 
+                if(result.data.text.length == 0) return;
+
                 alert(result.data.text);
 
             })
