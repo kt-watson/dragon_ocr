@@ -72,8 +72,9 @@ Vue.createApp({
 
             this.status = 'initialize';
 
-            this.ocrworker = await Tesseract.createWorker('eng');
-
+            this.ocrworker = await Tesseract.createWorker();
+            await this.ocrworker.loadLanguage('eng');
+            await this.ocrworker.initialize('eng');
             await this.ocrworker.setParameters({
               tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
               tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -172,6 +173,8 @@ Vue.createApp({
             
             const result = await this.ocrworker.recognize(this.dataUrl);
             this.status = 'none';
+            await this.ocrworker.terminate();
+
             console.log(result)
 
             if(result.data.text.length == 0) return;
