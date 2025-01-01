@@ -114,6 +114,10 @@ Vue.createApp({
                 this.video.srcObject = stream;
                 this.playVideo();
 
+                this.cropImage();
+                this.runOcr();
+                
+
             })
             .catch(error => console.log(error));
 
