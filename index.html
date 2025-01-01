@@ -168,6 +168,11 @@ Vue.createApp({
               logger: m => console.log(m),
             });
 
+            await worker.setParameters({
+              tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            });
+
             const result = await worker.recognize(this.dataUrl);
             this.status = 'none';
             console.log(result)
