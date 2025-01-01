@@ -117,7 +117,7 @@ Vue.createApp({
                 setInterval(function(){
                     _this.cropImage();
                     _this.runOcr2();
-                }, 1000);
+                }, 2000);
                 
 
             })
@@ -171,7 +171,7 @@ Vue.createApp({
         },
         async runOcr2() { // ③ スナップショットからテキストを抽出
 
-            if (this.status === 'reading') return;
+            if (this.status == 'reading') return;
             this.status = 'reading';
             
             const result = await this.ocrworker.recognize(this.dataUrl);
