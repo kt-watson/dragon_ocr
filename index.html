@@ -90,7 +90,7 @@ Vue.createApp({
             .then(stream => {
 
                 this.canvas = this.$refs.canvas;
-                this.context = this.canvas.getContext('2d');
+                this.context = this.canvas.getContext('2d',{ willReadFrequently: true });
 
                 this.video = document.createElement('video');
                 this.video.addEventListener('loadedmetadata', () => { // メタデータが取得できるようになったら実行
@@ -295,7 +295,7 @@ Vue.createApp({
             let cropCanvas = document.createElement("canvas");
             cropCanvas.width = this.ocr_area_width;
             cropCanvas.height = this.ocr_area_height;
-            let cropCanvasContent = cropCanvas.getContext('2d');
+            let cropCanvasContent = cropCanvas.getContext('2d',{ willReadFrequently: true });
             cropCanvasContent.drawImage(this.canvas, 0, this.ocr_area_y, this.ocr_area_width, this.ocr_area_height, 0, 0, this.ocr_area_width, this.ocr_area_height);
             this.dataUrl = cropCanvas.toDataURL();            
         }
