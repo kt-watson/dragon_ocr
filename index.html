@@ -94,7 +94,10 @@ Vue.createApp({
                 this.video.srcObject = stream;
                 this.playVideo();
 
-                this.cropImage();
+
+                setInterval(function(){
+                    this.cropImage();
+                }, 200);
                 //this.runOcr();
                 
 
