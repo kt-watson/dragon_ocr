@@ -134,7 +134,7 @@ Vue.createApp({
                         dst.data[i+3] = src.data[i+3];
                     }
                 } else {
-                    dst.data = src.data;
+                    dst = src;
                 }
 
                 this.context.putImageData(dst, 0, 0);
