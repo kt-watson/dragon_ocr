@@ -62,7 +62,8 @@ Vue.createApp({
             tmpImg: null,
             THRESHOLD: 200,
             greymode: true,
-            detectLog: null
+            detectLog: null,
+            ocrworker: null
         }
     },
     methods: {
@@ -70,6 +71,19 @@ Vue.createApp({
         initialize() {
 
             this.status = 'initialize';
+
+
+            const { createWorker } = Tesseract;
+            this.ocrworker = await createWorker('eng', 3, {
+              logger: m => console.log(m),
+            });
+
+            await this.ocrworker.setParameters({
+              tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            });
+
+            
 
             navigator.mediaDevices.getUserMedia({
                 video: {
@@ -161,19 +175,8 @@ Vue.createApp({
 
             if (this.status === 'reading') return;
             this.status = 'reading';
-
-
-            const { createWorker } = Tesseract;
-            const worker = await createWorker('eng', 3, {
-              logger: m => console.log(m),
-            });
-
-            await worker.setParameters({
-              tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
-              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            });
-
-            const result = await worker.recognize(this.dataUrl);
+            
+            const result = await this.ocrworker.recognize(this.dataUrl);
             this.status = 'none';
             console.log(result)
 
