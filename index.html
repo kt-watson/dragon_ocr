@@ -95,9 +95,11 @@ Vue.createApp({
                 this.playVideo();
 
 
+                let _this = this;
+
                 setInterval(function(){
-                    this.cropImage();
-                }, 200);
+                    _this.cropImage();
+                }, 500);
                 //this.runOcr();
                 
 
