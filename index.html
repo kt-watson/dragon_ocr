@@ -72,9 +72,12 @@ Vue.createApp({
 
             this.status = 'initialize';
 
-            this.ocrworker = await Tesseract.createWorker();
-            await this.ocrworker.loadLanguage('eng');
-            await this.ocrworker.initialize('eng');
+            this.ocrworker = await Tesseract.createWorker('eng', 1, {
+                workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js',
+                langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+                corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0'
+            });
+
             await this.ocrworker.setParameters({
               tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
               tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -113,7 +116,7 @@ Vue.createApp({
 
                 setInterval(function(){
                     _this.cropImage();
-                    _this.runOcr3();
+                    _this.runOcr2();
                 }, 1000);
                 
 
@@ -171,14 +174,7 @@ Vue.createApp({
             if (this.status === 'reading') return;
             this.status = 'reading';
             
-            const result = await this.ocrworker.recognize(
-                this.dataUrl,
-                'eng',
-                {
-                    tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
-                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                }
-            );
+            const result = await this.ocrworker.recognize(this.dataUrl);
             this.status = 'none';
 
             console.log(result)
