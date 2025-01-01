@@ -67,14 +67,9 @@ Vue.createApp({
     },
     methods: {
         // ① カメラとキャンバスの準備
-        async initialize() {
+        initialize() {
 
             this.status = 'initialize';
-
-            const { createWorker } = Tesseract;
-            const worker = await createWorker('eng', 1, {
-              logger: m => console.log(m),
-            });
 
             navigator.mediaDevices.getUserMedia({
                 video: {
@@ -109,7 +104,7 @@ Vue.createApp({
 
                 setInterval(function(){
                     _this.cropImage();
-                    _this.runOcr();
+                    _this.runOcr2();
                 }, 1000);
                 
 
@@ -162,6 +157,31 @@ Vue.createApp({
             this.renderProcess = requestAnimationFrame(this.render);
 
         },
+        async runOcr2() { // ③ スナップショットからテキストを抽出
+
+            if (this.status === 'reading') return;
+            this.status = 'reading';
+
+
+            const { createWorker } = Tesseract;
+            const worker = await createWorker('eng', 1, {
+              logger: m => console.log(m),
+            });
+
+            const result = await worker.recognize(this.dataUrl);
+            this.status = 'none';
+            console.log(result)
+
+            if(result.data.text.length == 0) return;
+
+            let _this = this
+            if(confirm(result.data.text)){
+                _this.detectLog += result.data.text
+            };                
+        },
+
+        
+        
         runOcr() { // ③ スナップショットからテキストを抽出
 
             if (this.status === 'reading') return;
