@@ -126,7 +126,7 @@ Vue.createApp({
                 this.tmpImg = this.canvas.toDataURL();
 
 
-                if (greymode) {
+                if (this.greymode) {
                     for (var i = 0; i < src.data.length; i=i+4) {
                         var yy = ~~(0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2]);
                         var ret = (yy > this.THRESHOLD) ? 255 : 0;
