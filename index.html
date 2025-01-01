@@ -113,7 +113,7 @@ Vue.createApp({
 
                 setInterval(function(){
                     _this.cropImage();
-                    _this.runOcr2();
+                    _this.runOcr();
                 }, 1000);
                 
 
@@ -171,7 +171,14 @@ Vue.createApp({
             if (this.status === 'reading') return;
             this.status = 'reading';
             
-            const result = await this.ocrworker.recognize(this.dataUrl);
+            const result = await this.ocrworker.recognize(
+                this.dataUrl,
+                'eng',
+                {
+                    tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
+                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                }
+            );
             this.status = 'none';
 
             console.log(result)
@@ -191,17 +198,14 @@ Vue.createApp({
 
             if (this.status === 'reading') return;
             this.status = 'reading';
-
-
-            Tesseract.setParameters({
-              tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
-              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            });
             
             Tesseract.recognize(this.dataUrl, 'eng', {
                 logger: log => {
                     console.log(log);
-                }
+                },
+                tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
+                tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            }
             })
             .then(result => {
                 this.status = 'none';
