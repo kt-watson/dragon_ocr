@@ -100,7 +100,7 @@ Vue.createApp({
                 setInterval(function(){
                     _this.cropImage();
                     _this.runOcr();
-                }, 500);
+                }, 1000);
                 
 
             })
@@ -149,6 +149,7 @@ Vue.createApp({
         },
         runOcr() { // ③ スナップショットからテキストを抽出
 
+            if (this.status === 'reading') return;
             this.status = 'reading';
 
             Tesseract.recognize(this.dataUrl, 'eng', {
@@ -157,6 +158,7 @@ Vue.createApp({
                 }
             })
             .then(result => {
+                this.status = 'none';
                 console.log(result)
 
                 alert(result.data.text);
