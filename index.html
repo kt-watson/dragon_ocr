@@ -73,6 +73,7 @@ Vue.createApp({
             this.status = 'initialize';
 
 
+            /*
             const { createWorker } = Tesseract;
             this.ocrworker = await createWorker('eng', 3, {
               corePath: 'https://unpkg.com/browse/tesseract.js-core@2.2.0/tesseract-core.wasm.js',
@@ -84,6 +85,7 @@ Vue.createApp({
               tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
               tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
             });
+            */
 
             
 
@@ -197,6 +199,12 @@ Vue.createApp({
             if (this.status === 'reading') return;
             this.status = 'reading';
 
+
+            Tesseract.setParameters({
+              tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            });
+            
             Tesseract.recognize(this.dataUrl, 'eng', {
                 logger: log => {
                     console.log(log);
