@@ -113,7 +113,7 @@ Vue.createApp({
 
                 setInterval(function(){
                     _this.cropImage();
-                    _this.runOcr();
+                    _this.runOcr3();
                 }, 1000);
                 
 
@@ -191,6 +191,39 @@ Vue.createApp({
             };
             await this.ocrworker.terminate();
         },
+        async runOcr3() { // ③ スナップショットからテキストを抽出
+
+            if (this.status === 'reading') return;
+            this.status = 'reading';
+
+            const ocrworker = await Tesseract.createWorker();
+            await ocrworker.loadLanguage('eng');
+            await ocrworker.initialize('eng');
+            await ocrworker.setParameters({
+              tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            });
+            const result = await ocrworker.recognize(
+                this.dataUrl,
+                'eng',
+                {
+                    tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
+                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                }
+            );
+            this.status = 'none';
+
+            console.log(result)
+
+            if(result.data.text.length == 0) return;
+
+            let _this = this
+            if(confirm(result.data.text)){
+                _this.detectLog += result.data.text
+            };
+            await this.ocrworker.terminate();
+        },
+
 
         
         
