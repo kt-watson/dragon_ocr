@@ -80,7 +80,7 @@ Vue.createApp({
 
             await this.ocrworker.setParameters({
               //tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
-              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ '
             });
             
             navigator.mediaDevices.getUserMedia({
