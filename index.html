@@ -174,8 +174,8 @@ Vue.createApp({
             if (this.status === 'reading') return;
             this.status = 'reading';
             
-            //const result = await this.ocrworker.recognize(this.dataUrl);
-            const result = await this.ocrworker.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png');
+            const result = await this.ocrworker.recognize(this.dataUrl);
+            //const result = await this.ocrworker.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png');
             this.status = 'none';
 
             console.log(result)
