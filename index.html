@@ -57,7 +57,8 @@ Vue.createApp({
             ocr_area_y: 0,
             renderProcess: null,
             tmpImg: null,
-            THRESHOLD: 200
+            THRESHOLD: 200,
+            greymode: false
         }
     },
     methods: {
@@ -124,11 +125,14 @@ Vue.createApp({
                 var dst = this.context.createImageData(this.canvas.width, this.canvas.height);
                 this.tmpImg = this.canvas.toDataURL();
 
-                for (var i = 0; i < src.data.length; i=i+4) {
-                    var yy = ~~(0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2]);
-                    var ret = (yy > this.THRESHOLD) ? 255 : 0;
-                    dst.data[i] = dst.data[i+1] = dst.data[i+2] = ret;
-                    dst.data[i+3] = src.data[i+3];
+
+                if (greymode) {
+                    for (var i = 0; i < src.data.length; i=i+4) {
+                        var yy = ~~(0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2]);
+                        var ret = (yy > this.THRESHOLD) ? 255 : 0;
+                        dst.data[i] = dst.data[i+1] = dst.data[i+2] = ret;
+                        dst.data[i+3] = src.data[i+3];
+                    }
                 }
 
                 this.context.putImageData(dst, 0, 0);
