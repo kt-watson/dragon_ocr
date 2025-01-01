@@ -186,7 +186,7 @@ Vue.createApp({
             if(confirm(result.data.text)){
                 _this.detectLog += result.data.text
             };
-            await this.ocrworker.terminate();
+            //await this.ocrworker.terminate();
         },
         async runOcr3() { // ③ スナップショットからテキストを抽出
 
