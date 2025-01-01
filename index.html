@@ -72,10 +72,7 @@ Vue.createApp({
 
             this.status = 'initialize';
 
-
-            
-            const { createWorker } = Tesseract;
-            this.ocrworker = await createWorker('eng');
+            this.ocrworker = await Tesseract.createWorker('eng');
 
             await this.ocrworker.setParameters({
               tessedit_pageseg_mode: 'PSM_SINGLE_LINE',
