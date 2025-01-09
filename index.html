@@ -15,6 +15,13 @@
             <img :src="dataUrl"></img>
         </div>
         <div>
+            <v-otp-input
+                length="16"
+                model-value="3214214"
+                >
+            </v-otp-input>
+        </div>
+        <div>
             <v-slider
                 v-model="THRESHOLD"
                 max=255
